@@ -63,6 +63,8 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
 
     model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
+    if model_type == "bert":
+        model = BERTClassifier(2)
 
     trainer = Trainer(
         model=model,
