@@ -1,5 +1,8 @@
 import torch
 
+from ..classifiers.BERTClassifier import BERTClassifier
+from ..classifiers.LSTMClassifier import LSTMClassifier
+
 from typing import Tuple, Literal
 from torch import nn
 from torch import optim
@@ -80,14 +83,17 @@ class Trainer:
         if optimizer_type == "adam":
             optimizer = optim.Adam(self.model.parameters(), lr=lr, betas=betas)
 
+        scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.9)
+
         train_dataset = TensorDataset(
-            torch.tensor(self.X_train).long(), 
-            torch.tensor(self.y_train).float()
+            self.X_train, 
+            self.y_train
         )
         val_dataset = TensorDataset(
-            torch.tensor(self.X_val).long(), 
-            torch.tensor(self.y_val).float()
+            self.X_val, 
+            self.y_val
         )
+
         trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         valloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
@@ -98,12 +104,25 @@ class Trainer:
             running_accuracy = 0.0
             running_f1 = 0.0
             for i, (inputs, labels) in enumerate(trainloader):
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = self.model(inputs)
-                loss = criterion(outputs, labels)
+                labels = labels.to(device)
+                outputs = None
+                loss    = None
+
+                if isinstance(self.model, LSTMClassifier):
+                    inputs = inputs.to(device)
+                    outputs = self.model(inputs)
+                    loss = criterion(outputs, labels)
+                else:
+                    inputs = {k: v.to(device) for k, v in inputs.items()}
+                    outputs = self.model(labels=labels, **inputs)
+                    loss = outputs.loss
+                    outputs = outputs.logits
+                
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                scheduler.step()
+
                 running_loss += loss.item()
                 running_accuracy += torch.sigmoid(outputs).argmax(dim=1).eq(labels.argmax(dim=1)).sum().item()
                 running_f1 += f1_score(
@@ -118,9 +137,21 @@ class Trainer:
             running_f1 = 0.0
             with torch.no_grad():
                 for i, (inputs, labels) in enumerate(valloader):
-                    inputs, labels = inputs.to(device), labels.to(device)
-                    outputs = self.model(inputs)
-                    loss = criterion(outputs, labels)
+                    labels = labels.to(device)
+                    outputs = None
+                    loss    = None
+
+                    if isinstance(self.model, LSTMClassifier):
+                        inputs = inputs.to(device)
+                        outputs = self.model(inputs)
+                        loss = criterion(outputs, labels)
+
+                    else:
+                        inputs = {k: v.to(device) for k, v in inputs.items()}
+                        outputs = self.model(labels=labels, **inputs)
+                        loss = outputs.loss
+                        outputs = outputs.logits
+
                     running_loss += loss.item()
                     running_accuracy += torch.sigmoid(outputs).argmax(dim=1).eq(labels.argmax(dim=1)).sum().item()
                     running_f1 += f1_score(
@@ -157,8 +188,8 @@ class Trainer:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(device)
         test_dataset = TensorDataset(
-            torch.tensor(self.X_test).long(), 
-            torch.tensor(self.y_test).float()
+            self.X_test, 
+            self.y_test
         )
         testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
         criterion = nn.CrossEntropyLoss()
@@ -167,9 +198,21 @@ class Trainer:
         running_f1 = 0.0
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(testloader):
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = self.model(inputs)
-                loss = criterion(outputs, labels)
+                labels = labels.to(device)
+                outputs = None
+                loss    = None
+
+                if isinstance(self.model, LSTMClassifier):
+                    inputs = inputs.to(device)
+                    outputs = self.model(inputs)
+                    loss = criterion(outputs, labels)
+                        
+                else:
+                    inputs = {k: v.to(device) for k, v in inputs.items()}
+                    outputs = self.model(labels=labels, **inputs)
+                    loss = outputs.loss
+                    outputs = outputs.logits
+
                 running_loss += loss.item()
                 running_accuracy += torch.sigmoid(outputs).argmax(dim=1).eq(labels.argmax(dim=1)).sum().item()
                 running_f1 += f1_score(

@@ -1,14 +1,13 @@
 import pandas as pd
+import torch
 
 from classifiers.LSTMClassifier import LSTMClassifier
 from classifiers.BERTClassifier import BERTClassifier
 
-from utils.preprocessor import Preprocessor
 from utils.trainer import Trainer
 from sklearn.model_selection import train_test_split
 
-import nltk
-nltk.download('wordnet')
+from transformers import AutoTokenizer
 
 import argparse
 
@@ -51,18 +50,14 @@ def main():
 
     df = pd.read_csv(input_path)
 
-    X_train, X_val, y_train, y_val = train_test_split(df["text"].values, df["label"].values, test_size=0.2, random_state=42, shuffle=True, stratify=df["label"].values)
+    tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
+
+    X, y = tokenizer(df["text"].values, return_tensors="pt", max_length=512), torch.nn.functional.one_hot(torch.Tensor(df["label"]).long()).float()
+
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=df["label"].values)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
 
-    preprocessor = Preprocessor(min_df=min_df, max_df=max_df, X_train=X_train, y_train=y_train, stop_words=stop_words)
-    X_train = preprocessor.input_preprocess(X_train)
-    X_test = preprocessor.input_preprocess(X_test)
-    X_val = preprocessor.input_preprocess(X_val)
-    y_train = preprocessor.output_preprocess(y_train)
-    y_test = preprocessor.output_preprocess(y_test)
-    y_val = preprocessor.output_preprocess(y_val)
-
-    model = LSTMClassifier(input_size=preprocessor.vocab_size+1, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
+    model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
 
     trainer = Trainer(
         model=model,
