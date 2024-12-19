@@ -6,6 +6,7 @@ from classifiers.BERTClassifier import BERTClassifier
 
 from utils.trainer import Trainer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 
 from transformers import AutoTokenizer
 
@@ -51,13 +52,10 @@ def main():
     df = pd.read_csv(input_path)
 
     tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
+    ohe_encoder = OneHotEncoder()
 
-    cls_id = {
-        "ham": 0,
-        "spam": 1,
-    }
-
-    X, y = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512), torch.nn.functional.one_hot(torch.Tensor(df["label"].apply(lambda x: cls_id[x.strip()])).long()).float()
+    X = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512)
+    y = torch.Tensor(OneHotEncoder.fit_transform(df["label"])).float()
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=y)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
