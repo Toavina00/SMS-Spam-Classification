@@ -59,7 +59,7 @@ def main():
 
     X, y = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512), torch.nn.functional.one_hot(torch.Tensor(df["label"].apply(lambda x: cls_id[x.strip()])).long()).float()
 
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=df["label"].values)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=y)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
 
     model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
