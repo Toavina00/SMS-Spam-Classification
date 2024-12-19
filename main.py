@@ -2,7 +2,8 @@ import pandas as pd
 import torch
 
 from classifiers.LSTMClassifier import LSTMClassifier
-from classifiers.BERTClassifier import BERTClassifier
+
+from transformers import BertForSequenceClassification
 
 from utils.trainer import Trainer
 from sklearn.model_selection import train_test_split
@@ -60,9 +61,15 @@ def main():
 
 
 
-    model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
-    if model_type == "bert":
-        model = BERTClassifier(2)
+    if model_type == "lstm":
+        model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
+    else:
+        model = BertForSequenceClassification.from_pretrained(
+            "bert-base-uncased", 
+            num_labels = 2,   
+            output_attentions = False, 
+            output_hidden_states = False
+        )
 
     trainer = Trainer(
         model=model,
