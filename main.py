@@ -18,9 +18,6 @@ def main():
     parser.add_argument("input_data_path", type=str, help="Path to the input data csv file.")
     parser.add_argument("--model", type=str, default="lstm", choices=["lstm", "bert"], help="The model to use.")
     parser.add_argument("--do-test", action="store_true", default=False, help="Perform a test on the model.")
-    parser.add_argument("--stop_words", action="store_true", default=False, help="Remove English stop words from the text data.")
-    parser.add_argument("--max_df", type=float, default=1.0, help="The maximum document frequency for the BoW, Ngram and Tf-Idf models.")
-    parser.add_argument("--min_df", type=float, default=1, help="The minimum document frequency for the BoW, Ngram and Tf-Idf models.")
     parser.add_argument("--epochs", type=int, default=10, help="The number of epochs to train for.")
     parser.add_argument("--batch_size", type=int, default=64, help="The batch size to use for training.")
     parser.add_argument("--lr", type=float, default=0.01, help="The learning rate to use.")
@@ -34,8 +31,6 @@ def main():
     args = parser.parse_args()
 
     input_path = args.input_data_path
-    max_df = args.max_df
-    min_df = args.min_df
     epochs = args.epochs
     batch_size = args.batch_size
     lr = args.lr
@@ -45,7 +40,6 @@ def main():
     embedding_size = args.embedding_size
     hidden_size = args.hidden_size
     num_layers = args.num_layers
-    stop_words = args.stop_words
     do_test    = args.do_test
     model_type = args.model
 

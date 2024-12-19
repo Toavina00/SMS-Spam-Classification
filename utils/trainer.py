@@ -149,7 +149,7 @@ class Trainer:
                         zero_division=1,
                     )
             
-            print(f"Validation ~ loss: {running_loss / (i+1):.4f} accuracy: {running_accuracy / len(trainloader.dataset):.4f} f1_score: {running_f1 / (i+1):.4f}", end=" | ")
+            print(f"Validation ~ loss: {running_loss / (i+1):.4f} accuracy: {running_accuracy / len(trainloader.dataset):.4f} f1_score: {running_f1 / (i+1):.4f}")
 
         return self.model
 
