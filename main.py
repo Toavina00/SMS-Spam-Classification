@@ -55,7 +55,7 @@ def main():
     ohe_encoder = OneHotEncoder()
 
     X = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512)
-    y = torch.Tensor(OneHotEncoder.fit_transform(df["label"])).float()
+    y = torch.Tensor(ohe_encoder.fit_transform(df["label"])).float()
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=y)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
