@@ -52,7 +52,12 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
 
-    X, y = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512), torch.nn.functional.one_hot(torch.Tensor(df["label"]).long()).float()
+    cls_id = {
+        "ham": 0,
+        "spam": 1,
+    }
+
+    X, y = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512), torch.nn.functional.one_hot(torch.Tensor(df["label"].apply(lambda x: cls_id[x.strip()])).long()).float()
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=df["label"].values)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
