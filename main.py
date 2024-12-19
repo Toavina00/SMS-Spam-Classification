@@ -12,7 +12,7 @@ from transformers import AutoTokenizer
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description="Train a lyrics classification model.")
+    parser = argparse.ArgumentParser(description="Train a spam classification model.")
 
     parser.add_argument("input_data_path", type=str, help="Path to the input data csv file.")
     parser.add_argument("--model", type=str, default="lstm", choices=["lstm", "bert"], help="The model to use.")
