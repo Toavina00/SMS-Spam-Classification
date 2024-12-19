@@ -52,7 +52,7 @@ def main():
     df = pd.read_csv(input_path)
 
     tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-uncased")
-    ohe_encoder = OneHotEncoder()
+    ohe_encoder = OneHotEncoder(sparse_output=False)
 
     X = tokenizer(df["text"].to_list(), return_tensors="pt", padding=True, truncation=True, max_length=512)
     y = torch.Tensor(ohe_encoder.fit_transform(df["label"].values.reshape(-1, 1))).float()
