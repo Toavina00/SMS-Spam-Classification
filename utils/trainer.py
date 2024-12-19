@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.metrics import f1_score
 
 class Trainer:
-    def __init__(self, model, X_train, y_train, X_test, y_test, X_val, y_val):
+    def __init__(self, model, train_dataset, test_dataset, val_dataset):
         """
         Initializes a Trainer instance.
 
@@ -28,12 +28,9 @@ class Trainer:
             The target for testing.
         """
         
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
-        self.X_val = X_val
-        self.y_val = y_val
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
+        self.val_dataset = val_dataset
         self.model = model    
 
     def train(
@@ -85,17 +82,8 @@ class Trainer:
 
         scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.9)
 
-        train_dataset = TensorDataset(
-            self.X_train, 
-            self.y_train
-        )
-        val_dataset = TensorDataset(
-            self.X_val, 
-            self.y_val
-        )
-
-        trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        valloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+        trainloader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True)
+        valloader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False)
 
         criterion = nn.CrossEntropyLoss()
 
@@ -103,18 +91,19 @@ class Trainer:
             running_loss = 0.0
             running_accuracy = 0.0
             running_f1 = 0.0
-            for i, (inputs, labels) in enumerate(trainloader):
+            for i, (input_ids, token_type_ids, attention_mask, labels) in enumerate(trainloader):
                 labels = labels.to(device)
                 outputs = None
                 loss    = None
 
                 if isinstance(self.model, LSTMClassifier):
-                    inputs = inputs.to(device)
-                    outputs = self.model(inputs)
+                    input_ids = input_ids.to(device)
+                    outputs = self.model(input_ids)
                     loss = criterion(outputs, labels)
+                        
                 else:
-                    inputs = {k: v.to(device) for k, v in inputs.items()}
-                    outputs = self.model(labels=labels, **inputs)
+                    input_ids, token_type_ids, attention_mask = input_ids.to(device), token_type_ids.to(device), attention_mask.to(device)
+                    outputs = self.model(labels=labels, input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
                     loss = outputs.loss
                     outputs = outputs.logits
                 
@@ -136,19 +125,19 @@ class Trainer:
             running_accuracy = 0.0
             running_f1 = 0.0
             with torch.no_grad():
-                for i, (inputs, labels) in enumerate(valloader):
+                for i, (input_ids, token_type_ids, attention_mask, labels) in enumerate(valloader):
                     labels = labels.to(device)
                     outputs = None
                     loss    = None
 
                     if isinstance(self.model, LSTMClassifier):
-                        inputs = inputs.to(device)
-                        outputs = self.model(inputs)
+                        input_ids = input_ids.to(device)
+                        outputs = self.model(input_ids)
                         loss = criterion(outputs, labels)
-
+                        
                     else:
-                        inputs = {k: v.to(device) for k, v in inputs.items()}
-                        outputs = self.model(labels=labels, **inputs)
+                        input_ids, token_type_ids, attention_mask = input_ids.to(device), token_type_ids.to(device), attention_mask.to(device)
+                        outputs = self.model(labels=labels, input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
                         loss = outputs.loss
                         outputs = outputs.logits
 
@@ -187,29 +176,25 @@ class Trainer:
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(device)
-        test_dataset = TensorDataset(
-            self.X_test, 
-            self.y_test
-        )
-        testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        testloader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=False)
         criterion = nn.CrossEntropyLoss()
         running_loss = 0.0
         running_accuracy = 0.0
         running_f1 = 0.0
         with torch.no_grad():
-            for i, (inputs, labels) in enumerate(testloader):
+            for i, (input_ids, token_type_ids, attention_mask, labels) in enumerate(testloader):
                 labels = labels.to(device)
                 outputs = None
                 loss    = None
 
                 if isinstance(self.model, LSTMClassifier):
-                    inputs = inputs.to(device)
-                    outputs = self.model(inputs)
+                    input_ids = input_ids.to(device)
+                    outputs = self.model(input_ids)
                     loss = criterion(outputs, labels)
                         
                 else:
-                    inputs = {k: v.to(device) for k, v in inputs.items()}
-                    outputs = self.model(labels=labels, **inputs)
+                    input_ids, token_type_ids, attention_mask = input_ids.to(device), token_type_ids.to(device), attention_mask.to(device)
+                    outputs = self.model(labels=labels, input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
                     loss = outputs.loss
                     outputs = outputs.logits
 
