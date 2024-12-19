@@ -60,9 +60,9 @@ def main():
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True, stratify=y)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42, stratify=y_train)
 
-    X_train = tokenizer(X_train.to_list(), return_tensors="pt", max_length=512, padding=True, truncation=True)
-    X_test = tokenizer(X_train.to_list(), return_tensors="pt", max_length=512, padding=True, truncation=True)
-    X_val = tokenizer(X_train.to_list(), return_tensors="pt", max_length=512, padding=True, truncation=True)
+    X_train = tokenizer(X_train.tolist(), return_tensors="pt", max_length=512, padding=True, truncation=True)
+    X_test = tokenizer(X_train.tolist(), return_tensors="pt", max_length=512, padding=True, truncation=True)
+    X_val = tokenizer(X_train.tolist(), return_tensors="pt", max_length=512, padding=True, truncation=True)
 
 
 
