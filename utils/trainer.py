@@ -1,7 +1,7 @@
 import torch
 
-from ..classifiers.BERTClassifier import BERTClassifier
-from ..classifiers.LSTMClassifier import LSTMClassifier
+from classifiers.BERTClassifier import BERTClassifier
+from classifiers.LSTMClassifier import LSTMClassifier
 
 from typing import Tuple, Literal
 from torch import nn
