@@ -104,6 +104,7 @@ class Trainer:
                     outputs     = self.model(**inputs)
                     loss        = outputs.loss
                     outputs     = outputs.logits
+                    labels      = inputs["labels"]
                 
                 optimizer.zero_grad()
                 loss.backward()
@@ -134,6 +135,7 @@ class Trainer:
                         outputs     = self.model(**inputs)
                         loss        = outputs.loss
                         outputs     = outputs.logits
+                        labels      = inputs["labels"]
 
                     running_loss        += loss.item()
                     running_accuracy    += torch.sigmoid(outputs).argmax(dim=1).eq(labels.argmax(dim=1)).sum().item()
@@ -188,6 +190,7 @@ class Trainer:
                     outputs     = self.model(**inputs)
                     loss        = outputs.loss
                     outputs     = outputs.logits
+                    labels      = inputs["labels"]
 
                 running_loss        += loss.item()
                 running_accuracy    += torch.sigmoid(outputs).argmax(dim=1).eq(labels.argmax(dim=1)).sum().item()
