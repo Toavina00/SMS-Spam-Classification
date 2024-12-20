@@ -91,7 +91,8 @@ def main():
             model_name[model_type], 
             num_labels = 2,   
             output_attentions = False, 
-            output_hidden_states = False
+            output_hidden_states = False,
+            ignore_mismatched_sizes=True
         )
 
     trainer = Trainer(
