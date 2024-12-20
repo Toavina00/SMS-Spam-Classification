@@ -24,7 +24,7 @@ class CustomDataset(Dataset):
     
     def __getitem__(self, index):
         out = {k: v[index] for k, v in self.data.items()}
-        out["labels"] = self.labels[index] if self.labels else None
+        out["labels"] = self.labels[index] if self.labels is not None else None
         return out
 
 def main():
