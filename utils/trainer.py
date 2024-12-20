@@ -100,7 +100,7 @@ class Trainer:
                     outputs       = self.model(text)
                     loss          = criterion(outputs, labels)
                 else:
-                    inputs      = {k: v.to(device) for k, v in inputs.item()}
+                    inputs      = {k: v.to(device) for k, v in inputs.items()}
                     outputs     = self.model(**inputs)
                     loss        = outputs.loss
                     outputs     = outputs.logits
@@ -130,7 +130,7 @@ class Trainer:
                         outputs       = self.model(text)
                         loss          = criterion(outputs, labels)
                     else:
-                        inputs      = {k: v.to(device) for k, v in inputs.item()}
+                        inputs      = {k: v.to(device) for k, v in inputs.items()}
                         outputs     = self.model(**inputs)
                         loss        = outputs.loss
                         outputs     = outputs.logits
@@ -184,7 +184,7 @@ class Trainer:
                     outputs       = self.model(text)
                     loss          = criterion(outputs, labels)
                 else:
-                    inputs      = {k: v.to(device) for k, v in inputs.item()}
+                    inputs      = {k: v.to(device) for k, v in inputs.items()}
                     outputs     = self.model(**inputs)
                     loss        = outputs.loss
                     outputs     = outputs.logits
