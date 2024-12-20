@@ -15,14 +15,17 @@ from transformers import AutoTokenizer
 import argparse
 
 class CustomDataset(Dataset):
-    def __init__(self, data):
+    def __init__(self, data, labels = None):
         self.data = data
+        self.labels = labels
 
     def __len__(self):
         return max([len(x) for x in self.data.values()])
     
     def __getitem__(self, index):
-        return {k: v[index] for k, v in self.data.items()}
+        out = {k: v[index] for k, v in self.data.items()}
+        out["labels"] = self.labels[index] if self.labels else None
+        return out
 
 def main():
     parser = argparse.ArgumentParser(description="Train a spam classification model.")
@@ -81,10 +84,6 @@ def main():
     X_test  = tokenizer(X_test,   padding=True,  return_tensors="pt", truncation=True)
     X_val   = tokenizer(X_val,    padding=True,  return_tensors="pt", truncation=True)
 
-    X_train["labels"] = torch.Tensor(y_train).float()
-    X_test["labels"] = torch.Tensor(y_test).float()
-    X_val["labels"] = torch.Tensor(y_val).float()
-
     if model_type == "lstm":
         model = LSTMClassifier(input_size=30522, embedding_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, num_classes=2)
     else:
@@ -97,9 +96,9 @@ def main():
 
     trainer = Trainer(
         model=model,
-        train_dataset=CustomDataset(X_train),
-        test_dataset=CustomDataset(X_test),
-        val_dataset=CustomDataset(X_val),
+        train_dataset=CustomDataset(X_train, torch.Tensor(y_train).float()),
+        test_dataset=CustomDataset(X_test, torch.Tensor(y_test).float()),
+        val_dataset=CustomDataset(X_val, torch.Tensor(y_val).float()),
     )
 
     trainer.train(batch_size=batch_size, epochs=epochs, lr=lr, momentum=momentum, betas=betas, optimizer_type=optimizer_type)
